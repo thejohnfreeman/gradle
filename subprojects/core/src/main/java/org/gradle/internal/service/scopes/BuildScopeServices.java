@@ -138,7 +138,6 @@ import org.gradle.internal.authentication.DefaultAuthenticationSchemeRegistry;
 import org.gradle.internal.classloader.ClassLoaderFactory;
 import org.gradle.internal.classloader.ClassLoaderHierarchyHasher;
 import org.gradle.internal.classpath.CachedClasspathTransformer;
-import org.gradle.internal.classpath.ClassPath;
 import org.gradle.internal.cleanup.BuildOutputCleanupListener;
 import org.gradle.internal.concurrent.ExecutorFactory;
 import org.gradle.internal.event.ListenerManager;
@@ -170,20 +169,12 @@ import java.util.List;
  * Contains the singleton services for a single build invocation.
  */
 public class BuildScopeServices extends DefaultServiceRegistry {
-    public static BuildScopeServices forSession(BuildSessionScopeServices sessionServices) {
-        return new BuildScopeServices(sessionServices);
-    }
-
-    protected BuildScopeServices(ServiceRegistry parent, StartParameter startParameter) {
-        this(new BuildSessionScopeServices(parent, startParameter, ClassPath.EMPTY));
-    }
-
-    private BuildScopeServices(final BuildSessionScopeServices sessionServices) {
-        super(sessionServices);
+    public BuildScopeServices(final ServiceRegistry parent) {
+        super(parent);
         addProvider(new BuildScanConfigServices());
         register(new Action<ServiceRegistration>() {
             public void execute(ServiceRegistration registration) {
-                for (PluginServiceRegistry pluginServiceRegistry : sessionServices.getAll(PluginServiceRegistry.class)) {
+                for (PluginServiceRegistry pluginServiceRegistry : parent.getAll(PluginServiceRegistry.class)) {
                     pluginServiceRegistry.registerBuildServices(registration);
                 }
             }
